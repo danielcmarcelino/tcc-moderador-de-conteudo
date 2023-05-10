@@ -5,15 +5,13 @@ app = Flask(__name__)
 formatoJsonMsg = '{ "msg": "texto da mensagem aqui" }'
 
 @app.route('/')
-def teste():
+def homepage():
     return 'API ativa. Utilize a url "/moderador" para enviar a mensagem que deseja classificar via JSON: ' + formatoJsonMsg
 
 @app.route('/classificar', methods=['POST'])
 def classificar():
     try:
-        jsonAux = request.get_json()
-        mensagem = jsonAux['msg']
-        mensagem = mensagem.upper()
+        mensagem = request.get_json()['msg'].upper()
     except:
         return 'Ocorreu um erro ao verificar o json. Verifique se o mesmo está no formato correto: ' + formatoJsonMsg
     
