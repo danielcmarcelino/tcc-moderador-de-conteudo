@@ -1,4 +1,4 @@
-from Word2Vec import *
+from algoritmoWord2Vec import *
 
-treinarWord2Vec(logTreinamento=False, imprimirGrafico=False)
-#print(validarTextoWord2Vec(""))
+#treinarWord2Vec()
+print(validarTextoWord2Vec(""))

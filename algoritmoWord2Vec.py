@@ -1,10 +1,7 @@
-import logging
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import re
-import time
 from gensim.models import Word2Vec
 from joblib import dump, load
 from sklearn.ensemble import RandomForestClassifier
@@ -75,13 +72,9 @@ def tratarDataframe(df):
     except Exception as e:
         raise Exception('Arquivo "Word2Vec", método "tratarDataframe": \n' + str(e))
 
-def treinarWord2Vec(logTreinamento = False, imprimirGrafico = False):
+def treinarWord2Vec():
     try:
-        horaIni = time.time()
         os.system('cls')
-
-        if logTreinamento:
-            logging.basicConfig(format='%(levelname)s - %(asctime)s: %(message)s', datefmt= '%H:%M:%S', level=logging.INFO)
 
         if os.path.exists(nomeArquivoModelo):
             os.remove(nomeArquivoModelo)
@@ -114,9 +107,6 @@ def treinarWord2Vec(logTreinamento = False, imprimirGrafico = False):
 
         dump(classifier, nomeArquivoClassificador)
         print('Modelo treinado RandomForest salvo')
-
-        if imprimirGrafico:
-            imprimeGrafico(X_teste, predicoes, 'Texto', 'Predição', 'Gráfico de Predições')
     except Exception as e:
         raise Exception('Arquivo "Word2Vec", método "treinarWord2Vec": \n' + str(e))
 
@@ -135,14 +125,6 @@ def validarTextoWord2Vec(texto):
 
         print(predicao[0])
 
-        return predicao >= 0.5
+        return predicao <= 0.5
     except Exception as e:
         raise Exception('Arquivo "Word2Vec", método "validarTexto": \n' + str(e))
-    
-def imprimeGrafico(x, y, tituloX, tituloY, titulo):
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-    ax.set_xlabel(tituloX)
-    ax.set_ylabel(tituloY)
-    ax.set_title(titulo)
-    plt.show()

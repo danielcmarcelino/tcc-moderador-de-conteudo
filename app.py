@@ -1,5 +1,5 @@
 from flask import Flask, request
-from Word2Vec import *
+from algoritmoWord2Vec import *
 
 app = Flask(__name__)
 
@@ -21,7 +21,6 @@ def classificar():
     else:
         if not validarTextoWord2Vec(mensagem):
             return 'Mensagem possivelmente indesejável = "' + mensagem + '"'
- 
     return 'Mensagem OK'
 
 app.run(port=5000, host='localhost', debug=True)
