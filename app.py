@@ -1,5 +1,6 @@
-from flask import Flask, request
+from geral import *
 from algoritmoWord2Vec import *
+from flask import Flask, request
 
 app = Flask(__name__)
 

@@ -1,5 +1,6 @@
+from geral import *
+
 import numpy as np
-import os
 import pandas as pd
 import re
 from gensim.models import Word2Vec
@@ -12,7 +13,8 @@ from unidecode import unidecode
 caminhoArquivos = 'arquivos/'
 
 nomeArquivo = caminhoArquivos + 'comentarios_toxicos_ptBR.csv'
-nomeColTexto = 'text_norm'
+nomeColTexto = 'text'
+nomeColTexto2 = 'text_norm'
 nomeColRotulo = 'toxic'
 
 caminhoArquivos = caminhoArquivos + 'word2vec/'
@@ -30,85 +32,75 @@ def converterTextoParaVetores(texto, modelo):
         else:
             return np.zeros(modelo.vector_size)
     except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "converterTextoParaVetores": \n' + str(e))
-    
+        raise Exception('Arquivo "algoritmoWord2Vec", método "converterTextoParaVetores": \n' + str(e))
+
 def lerArquivo():
     try:
         df = pd.read_csv(nomeArquivo)
         df = tratarDataframe(df)
         return df
     except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "lerArquivo": \n' + str(e))
-
-def tratarTexto(texto):
-    try:
-        texto = texto.strip()
-        if not texto:
-            return ""
-        
-
-    except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "tratarTexto": \n' + str(e))
+        raise Exception('Arquivo "algoritmoWord2Vec", método "lerArquivo": \n' + str(e))
 
 def tratarDataframe(df):
     try:
         print('Tamanho inicial do dataframe = ' + str(df.shape))
 
-        #Removendo colunas desnecessárias
-        df = df[[nomeColTexto, nomeColRotulo]] #nome drop(['text'], axis=1)
+        #Unificando as colunas de texto e duplicando a rótulo para não perder a consistência de dados
+        df_ColTexto1 = df[[nomeColTexto,  nomeColRotulo]]
+        df_ColTexto2 = df[[nomeColTexto2, nomeColRotulo]]
+        df_ColTexto2 = df_ColTexto2.rename(columns={nomeColTexto2: nomeColTexto})
+        df_novo = pd.concat([df_ColTexto1, df_ColTexto2], ignore_index=True, axis=0, keys=None, names=[nomeColTexto, nomeColRotulo])
 
         #Removendo linhas com valores nulos
-        print('Valores nulos = ' + str(df.isnull().sum().sum()))
-        df = df.dropna().reset_index(drop=True)
+        print('Valores nulos = ' + str(df_novo.isnull().sum().sum()))
+        df_novo = df_novo.dropna().reset_index(drop=True)
 
         #Substituindo caracteres acentuados por seus respectivos sem acentuação
-        df[nomeColTexto] = df[nomeColTexto].apply(lambda x: unidecode(x))
+        df_novo[nomeColTexto] = df_novo[nomeColTexto].apply(lambda x: unidecode(x))
 
         #Removendo caracteres que não sejam letras ou números
-        df[nomeColTexto] = df[nomeColTexto].apply(lambda x: re.sub(r'[^a-zA-Z0-9]', '', x))
-        
-        print('Tamanho final do dataframe = ' + str(df.shape))
-        return df
+        df_novo[nomeColTexto] = df_novo[nomeColTexto].apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', x))
+
+        print('Tamanho final do dataframe = ' + str(df_novo.shape))
+        return df_novo
     except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "tratarDataframe": \n' + str(e))
+        raise Exception('Arquivo "algoritmoWord2Vec", método "tratarDataframe": \n' + str(e))
 
-def treinarWord2Vec():
+def treinarWord2Vec(algoritmoTreinoWord2Vec = 0, tamanhoTeste = 0.3):
     try:
-        os.system('cls')
-
-        if os.path.exists(nomeArquivoModelo):
-            os.remove(nomeArquivoModelo)
-        if os.path.exists(nomeArquivoClassificador):
-            os.remove(nomeArquivoClassificador)
+        removerArquivo(nomeArquivoModelo)
+        removerArquivo(nomeArquivoClassificador)
 
         df = lerArquivo()
 
         textos = [t.lower().split() for t in df[nomeColTexto]]
         rotulos = [a for a in df[nomeColRotulo]]
 
-        textos_treino, textos_teste, rotulos_treino, rotulos_teste = train_test_split(textos, rotulos, test_size=0.30, random_state=10)
+        textos_treino, textos_teste, rotulos_treino, rotulos_teste = train_test_split(textos, rotulos, test_size=tamanhoTeste, random_state=42)
 
-        print('\n\nInício do treinamento')
-        modelo = Word2Vec(textos_treino, min_count=1)
+        msgAux =  ' do treinamento Word2Vec utilizando algoritmo de treino ' + ('CBOW' if algoritmoTreinoWord2Vec == 0 else 'Skip-Gram')
+        print('\nInício' + msgAux)
+        modelo = Word2Vec(textos_treino, min_count=1, sg=algoritmoTreinoWord2Vec)
         modelo.save(nomeArquivoModelo)
-        print('Fim do treinamento\n\n')
+        print('Fim' + msgAux + '\n')
 
         # Convertendo textos em vetores de palavras
         X_treino = np.array([converterTextoParaVetores(texto, modelo) for texto in textos_treino])
         X_teste = np.array([converterTextoParaVetores(texto, modelo) for texto in textos_teste])
 
-        classifier = RandomForestClassifier()
-        classifier.fit(X_treino, rotulos_treino)
+        print('\nInício do treinamento RandomForestClassifier')
+        classificador = RandomForestClassifier()
+        classificador.fit(X_treino, rotulos_treino)
+        dump(classificador, nomeArquivoClassificador)
+        print('Fim do treinamento RandomForestClassifier\n')
 
-        predicoes = classifier.predict(X_teste)
-
+        predicoes = classificador.predict(X_teste)
         acuracia = accuracy_score(rotulos_teste, predicoes)
         print('Acurácia: ', acuracia)
 
-        dump(classifier, nomeArquivoClassificador)
-        print('Modelo treinado RandomForest salvo')
     except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "treinarWord2Vec": \n' + str(e))
+        raise Exception('Arquivo "algoritmoWord2Vec", método "treinarWord2Vec": \n' + str(e))
 
 def validarTextoWord2Vec(texto):
     try:
@@ -117,14 +109,12 @@ def validarTextoWord2Vec(texto):
 
         #Tratando o texto para que fique no mesmo padrão da base de dados
         texto_processado = unidecode(texto.lower())
-        texto_processado = re.sub(r'[^a-zA-Z0-9]', '', texto_processado)
+        texto_processado = re.sub(r'[^a-zA-Z0-9\s]', '', texto_processado)
         vetor_texto = converterTextoParaVetores(texto_processado.split(), modelo)
         vetor_texto = np.array([vetor_texto])
 
         predicao = classificador.predict(vetor_texto)
 
-        print(predicao[0])
-
         return predicao <= 0.5
     except Exception as e:
-        raise Exception('Arquivo "Word2Vec", método "validarTexto": \n' + str(e))
+        raise Exception('Arquivo "algoritmoWord2Vec", método "validarTexto": \n' + str(e))
