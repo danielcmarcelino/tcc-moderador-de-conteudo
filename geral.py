@@ -26,6 +26,3 @@ def removerArquivo(caminhoArquivo):
             os.remove(caminhoArquivo)
     except Exception as e:
         raise Exception('Arquivo "geral", método "removerArquivo": \n' + str(e))
-    
-
-print("teste")

@@ -5,14 +5,14 @@ from algoritmoBoW import treinarBoW
 
 limparTela()
 
-# Utilizando Word2Vec com Skip-Gram
-treinarWord2Vec(algoritmoTreinoWord2Vec=1, tamanhoTeste=0.3)
-print('\n\n')
+for classificador in ['RFC', 'SVM', 'NV']:
+    # Utilizando Word2Vec com Skip-Gram
+    treinarWord2Vec(algoritmoTreinoWord2Vec=1, tamanhoTeste=0.3, algoritmoClassificador=classificador)
+    print('\n\n')
 
-# Utilizando Word2Vec com CBOW
-treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3)
-print('\n\n')
+    # Utilizando Word2Vec com CBOW
+    treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassificador=classificador)
+    print('\n\n')
 
-# Utilizando Bag of Words
-treinarBoW(tamanhoTeste=0.3)  
-
+# # Utilizando Bag of Words
+# treinarBoW(tamanhoTeste=0.3)

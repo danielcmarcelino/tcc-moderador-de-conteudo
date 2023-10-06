@@ -9,6 +9,7 @@ from joblib import dump, load
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from unidecode import unidecode
 
@@ -77,11 +78,11 @@ def tratarDataframe(df):
 
 def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassificador = 'RFC'):
     try:
-        if algoritmoClassificador not in ['RFC', 'SVM']:
+        if algoritmoClassificador not in ['RFC', 'SVM', 'NB']:
             raise Exception('algoritmoClassificador inválido')
         
-        if input('Digite s/S se tem certeza que quer realizar o treino de Word2Vec com ' + algoritmoClassificador + '?').upper() != 'S':
-            return
+        # if input('Digite s/S se tem certeza que quer realizar o treino de Word2Vec com ' + algoritmoClassificador + '?').upper() != 'S':
+        #     return
 
         removerArquivo(nomeArquivoModelo)
         
@@ -105,14 +106,18 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassi
         nomeArquivoClassificador = caminhoArquivos + 'classificador' + algoritmoClassificador + '.joblib'
         removerArquivo(nomeArquivoClassificador)
         print('\nInício do treinamento do algoritmo de classificação ' +  algoritmoClassificador)
-        classificador = SVC() if algoritmoClassificador == 'SVM' else RandomForestClassifier()
+        if algoritmoClassificador == 'SVM':
+            classificador = SVC()  
+        elif algoritmoClassificador == 'NB':
+            classificador = MultinomialNB()
+        else:
+            classificador = RandomForestClassifier()
         classificador.fit(X_treino, rotulos_treino)
         dump(classificador, nomeArquivoClassificador)
         print('Fim do treinamento do algoritmo de classificação ' +  algoritmoClassificador + '\n')
         
         predicoes = classificador.predict(X_teste)
         acuracia = accuracy_score(rotulos_teste, predicoes)
-        print('Acurácia: ', acuracia)
         print('Acurácia:', acuracia)
 
         # Calculando outras métricas
@@ -131,7 +136,7 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassi
 
 def validarTextoWord2Vec(texto, algoritmoClassificador = 'RFC'):
     try:
-        if algoritmoClassificador not in ['RFC', 'SVM']:
+        if algoritmoClassificador not in ['RFC', 'SVM', 'NB']:
             raise Exception('algoritmoClassificador inválido')
 
         modelo = Word2Vec.load(nomeArquivoModelo)
