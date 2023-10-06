@@ -1,16 +1,20 @@
 from geral import *
 
+import os 
 import numpy as np
 import pandas as pd
 import re
 from gensim.models import Word2Vec
 from joblib import dump, load
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from unidecode import unidecode
 
 caminhoArquivos = 'arquivos/'
+
+caminhoWord2Vec = caminhoArquivos + 'word2vec/'  # Novo caminho para salvar o modelo
+
 
 nomeArquivo = caminhoArquivos + 'comentarios_toxicos_ptBR.csv'
 nomeColTexto = 'text'
@@ -20,6 +24,10 @@ nomeColRotulo = 'toxic'
 caminhoArquivos = caminhoArquivos + 'word2vec/'
 nomeArquivoModelo = caminhoArquivos + 'modelo.bin'
 nomeArquivoClassificador = caminhoArquivos + 'classificador.joblib'
+
+if not os.path.exists(caminhoWord2Vec):
+    os.makedirs(caminhoWord2Vec)
+
 
 def converterTextoParaVetores(texto, modelo):
     try:
@@ -67,11 +75,8 @@ def tratarDataframe(df):
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "tratarDataframe": \n' + str(e))
 
-def treinarWord2Vec(algoritmoTreinoWord2Vec = 0, tamanhoTeste = 0.3):
+def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3):
     try:
-        removerArquivo(nomeArquivoModelo)
-        removerArquivo(nomeArquivoClassificador)
-
         df = lerArquivo()
 
         textos = [t.lower().split() for t in df[nomeColTexto]]
@@ -79,7 +84,7 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec = 0, tamanhoTeste = 0.3):
 
         textos_treino, textos_teste, rotulos_treino, rotulos_teste = train_test_split(textos, rotulos, test_size=tamanhoTeste, random_state=42)
 
-        msgAux =  ' do treinamento Word2Vec utilizando algoritmo de treino ' + ('CBOW' if algoritmoTreinoWord2Vec == 0 else 'Skip-Gram')
+        msgAux = ' do treinamento Word2Vec utilizando algoritmo de treino ' + ('CBOW' if algoritmoTreinoWord2Vec == 0 else 'Skip-Gram')
         print('\nInício' + msgAux)
         modelo = Word2Vec(textos_treino, min_count=1, sg=algoritmoTreinoWord2Vec)
         modelo.save(nomeArquivoModelo)
@@ -97,8 +102,19 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec = 0, tamanhoTeste = 0.3):
 
         predicoes = classificador.predict(X_teste)
         acuracia = accuracy_score(rotulos_teste, predicoes)
-        print('Acurácia: ', acuracia)
+        print('Acurácia:', acuracia)
 
+        # Calculando outras métricas
+        matriz_confusao = confusion_matrix(rotulos_teste, predicoes)
+        tvb2 = matriz_confusao[0, 0] / (matriz_confusao[0, 0] + matriz_confusao[0, 1])
+        tfd2 = matriz_confusao[1, 0] / (matriz_confusao[1, 0] + matriz_confusao[1, 1])
+        tpf2 = matriz_confusao[0, 1] / (matriz_confusao[0, 0] + matriz_confusao[0, 1])
+        f_medida2 = f1_score(rotulos_teste, predicoes)
+
+        print('Taxa de Verdadeiros Negativos (TVB):', tvb2)
+        print('Taxa de Falsos Negativos (TFD):', tfd2)
+        print('Taxa de Falsos Positivos (TPF):', tpf2)
+        print('F-medida:', f_medida2)
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "treinarWord2Vec": \n' + str(e))
 
@@ -118,3 +134,4 @@ def validarTextoWord2Vec(texto):
         return predicao <= 0.5
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "validarTexto": \n' + str(e))
+    
