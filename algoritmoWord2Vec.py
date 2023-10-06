@@ -9,6 +9,7 @@ from joblib import dump, load
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
 from unidecode import unidecode
 
 caminhoArquivos = 'arquivos/'
@@ -23,7 +24,6 @@ nomeColRotulo = 'toxic'
 
 caminhoArquivos = caminhoArquivos + 'word2vec/'
 nomeArquivoModelo = caminhoArquivos + 'modelo.bin'
-nomeArquivoClassificador = caminhoArquivos + 'classificador.joblib'
 
 if not os.path.exists(caminhoWord2Vec):
     os.makedirs(caminhoWord2Vec)
@@ -75,8 +75,16 @@ def tratarDataframe(df):
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "tratarDataframe": \n' + str(e))
 
-def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3):
+def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassificador = 'RFC'):
     try:
+        if algoritmoClassificador not in ['RFC', 'SVM']:
+            raise Exception('algoritmoClassificador inválido')
+        
+        if input('Digite s/S se tem certeza que quer realizar o treino de Word2Vec com ' + algoritmoClassificador + '?').upper() != 'S':
+            return
+
+        removerArquivo(nomeArquivoModelo)
+        
         df = lerArquivo()
 
         textos = [t.lower().split() for t in df[nomeColTexto]]
@@ -94,14 +102,17 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3):
         X_treino = np.array([converterTextoParaVetores(texto, modelo) for texto in textos_treino])
         X_teste = np.array([converterTextoParaVetores(texto, modelo) for texto in textos_teste])
 
-        print('\nInício do treinamento RandomForestClassifier')
-        classificador = RandomForestClassifier()
+        nomeArquivoClassificador = caminhoArquivos + 'classificador' + algoritmoClassificador + '.joblib'
+        removerArquivo(nomeArquivoClassificador)
+        print('\nInício do treinamento do algoritmo de classificação ' +  algoritmoClassificador)
+        classificador = SVC() if algoritmoClassificador == 'SVM' else RandomForestClassifier()
         classificador.fit(X_treino, rotulos_treino)
         dump(classificador, nomeArquivoClassificador)
-        print('Fim do treinamento RandomForestClassifier\n')
-
+        print('Fim do treinamento do algoritmo de classificação ' +  algoritmoClassificador + '\n')
+        
         predicoes = classificador.predict(X_teste)
         acuracia = accuracy_score(rotulos_teste, predicoes)
+        print('Acurácia: ', acuracia)
         print('Acurácia:', acuracia)
 
         # Calculando outras métricas
@@ -118,10 +129,13 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3):
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "treinarWord2Vec": \n' + str(e))
 
-def validarTextoWord2Vec(texto):
+def validarTextoWord2Vec(texto, algoritmoClassificador = 'RFC'):
     try:
+        if algoritmoClassificador not in ['RFC', 'SVM']:
+            raise Exception('algoritmoClassificador inválido')
+
         modelo = Word2Vec.load(nomeArquivoModelo)
-        classificador = load(nomeArquivoClassificador)
+        classificador = load(caminhoArquivos + 'classificador' + algoritmoClassificador + '.joblib')
 
         #Tratando o texto para que fique no mesmo padrão da base de dados
         texto_processado = unidecode(texto.lower())
