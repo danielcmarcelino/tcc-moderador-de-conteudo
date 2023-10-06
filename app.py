@@ -1,14 +1,5 @@
 from geral import *
-from algoritmoWord2Vec import validarTextoWord2Vec
-
-from algoritmoBoW import validarTextoBoW
-from algoritmoBoW import validarTextoAdaBoost
-from algoritmoBoW import validarTextoMultinomialNB
-from algoritmoBoW import validarTextoSGD
-from algoritmoBoW import validarTextoPassiveAggressive
-from algoritmoBoW import validarTextoPerceptron  # Importe a função do algoritmo Perceptron
-from algoritmoBoW import validarTextoMLP  # Importe a função do algoritmo MLPClassifier
-from algoritmoBoW import validarTextoDecisionTree  # Importe a função do algoritmo DecisionTreeClassifier
+from algoritmoBoW import treinarModelos, validarTextoBoW, validarTextoAdaBoost, validarTextoMultinomialNB, validarTextoSGD, validarTextoPassiveAggressive, validarTextoPerceptron, validarTextoMLP, validarTextoDecisionTree
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -31,10 +22,7 @@ def classificar():
         return 'A mensagem está vazia.'
     else:
         # Escolher o método desejado
-        if metodo == 'word2vec':
-            if not validarTextoWord2Vec(mensagem):
-                return 'Mensagem possivelmente indesejável (Word2Vec) = "' + mensagem + '"'
-        elif metodo == 'bow':
+        if metodo == 'bow':
             if not validarTextoBoW(mensagem):  
                 return 'Mensagem possivelmente indesejável (BoW) = "' + mensagem + '"'
         elif metodo == 'adaboost':
@@ -59,7 +47,7 @@ def classificar():
             if not validarTextoDecisionTree(mensagem):  
                 return 'Mensagem possivelmente indesejável (DecisionTreeClassifier) = "' + mensagem + '"'
         else:
-            return 'Método não reconhecido. Utilize "word2vec", "bow", "fasttext", "adaboost", "multinomialnb", "sgd", "passiveaggressive", "perceptron", "mlp" ou "decisiontree" como parâmetro.'
+            return 'Método não reconhecido. Utilize "bow", "adaboost", "multinomialnb", "sgd", "passiveaggressive", "perceptron", "mlp" ou "decisiontree" como parâmetro.'
 
     return 'Mensagem OK'
 
