@@ -129,4 +129,4 @@ def main():
         raise Exception(f'Erro na função principal: \n{str(e)}')
 
 if __name__ == '__main__':
-    main()
+    main() 
