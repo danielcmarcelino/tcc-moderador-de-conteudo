@@ -1,5 +1,6 @@
 from geral import *
 from algoritmoBoW import treinarModelos, validarTextoBoW, validarTextoAdaBoost, validarTextoMultinomialNB, validarTextoSGD, validarTextoPassiveAggressive, validarTextoPerceptron, validarTextoMLP, validarTextoDecisionTree
+from algoritmoTF import validarTextoTFIDF
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -46,8 +47,11 @@ def classificar():
         elif metodo == 'decisiontree':
             if not validarTextoDecisionTree(mensagem):  
                 return 'Mensagem possivelmente indesejável (DecisionTreeClassifier) = "' + mensagem + '"'
+        elif metodo == 'tfidf':
+            if not validarTextoTFIDF(mensagem):  
+                return 'Mensagem possivelmente indesejável (TF-IDF) = "' + mensagem + '"'
         else:
-            return 'Método não reconhecido. Utilize "bow", "adaboost", "multinomialnb", "sgd", "passiveaggressive", "perceptron", "mlp" ou "decisiontree" como parâmetro.'
+            return 'Método não reconhecido. Utilize "bow", "adaboost", "multinomialnb", "sgd", "passiveaggressive", "perceptron", "mlp", "decisiontree" ou "tfidf" como parâmetro.'
 
     return 'Mensagem OK'
 

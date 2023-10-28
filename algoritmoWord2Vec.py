@@ -1,16 +1,16 @@
 from geral import *
-
 import os 
 import numpy as np
 import pandas as pd
 import re
 from gensim.models import Word2Vec
 from joblib import dump, load
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import SVC
+from sklearn.linear_model import Perceptron, SGDClassifier, PassiveAggressiveClassifier
 from unidecode import unidecode
 
 caminhoArquivos = 'arquivos/'
@@ -78,12 +78,9 @@ def tratarDataframe(df):
 
 def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassificador = 'RFC'):
     try:
-        if algoritmoClassificador not in ['RFC', 'SVM', 'NB']:
+        if algoritmoClassificador not in ['RFC', 'SVM', 'NB', 'ADA', 'PER', 'SGD', 'PA']:
             raise Exception('algoritmoClassificador inválido')
         
-        # if input('Digite s/S se tem certeza que quer realizar o treino de Word2Vec com ' + algoritmoClassificador + '?').upper() != 'S':
-        #     return
-
         removerArquivo(nomeArquivoModelo)
         
         df = lerArquivo()
@@ -110,6 +107,14 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassi
             classificador = SVC()  
         elif algoritmoClassificador == 'NB':
             classificador = MultinomialNB()
+        elif algoritmoClassificador == 'ADA':
+            classificador = AdaBoostClassifier()
+        elif algoritmoClassificador == 'PER':
+            classificador = Perceptron()
+        elif algoritmoClassificador == 'SGD':
+            classificador = SGDClassifier()
+        elif algoritmoClassificador == 'PA':
+            classificador = PassiveAggressiveClassifier()
         else:
             classificador = RandomForestClassifier()
         classificador.fit(X_treino, rotulos_treino)
@@ -136,7 +141,7 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassi
 
 def validarTextoWord2Vec(texto, algoritmoClassificador = 'RFC'):
     try:
-        if algoritmoClassificador not in ['RFC', 'SVM', 'NB']:
+        if algoritmoClassificador not in ['RFC', 'SVM', 'NB', 'ADA', 'PER', 'SGD', 'PA']:
             raise Exception('algoritmoClassificador inválido')
 
         modelo = Word2Vec.load(nomeArquivoModelo)
@@ -153,4 +158,3 @@ def validarTextoWord2Vec(texto, algoritmoClassificador = 'RFC'):
         return predicao <= 0.5
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "validarTexto": \n' + str(e))
-    
