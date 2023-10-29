@@ -15,7 +15,7 @@ from unidecode import unidecode
 
 caminhoArquivos = 'arquivos/'
 
-caminhoWord2Vec = caminhoArquivos + 'word2vec/'  # Novo caminho para salvar o modelo
+caminhoWord2Vec = caminhoArquivos + 'word2vec/'  # Novo caminho para salvar o modelo - 
 
 
 nomeArquivo = caminhoArquivos + 'comentarios_toxicos_ptBR.csv'
