@@ -105,6 +105,28 @@ def treinarModelos(classificadores, vectorizer, tamanhoTeste=0.3):
     except Exception as e:
         raise Exception(f'Erro durante o treinamento dos modelos: \n{str(e)}')
 
+def validarTextoBoW(texto):
+    try:
+        # Carregando o vetorizador
+        vectorizer = load(nomeArquivoVectorizer)
+        # Carregando o classificador treinado
+        classificador = load(nomeArquivoClassificador)
+
+        # Tratando o texto para que fique no mesmo padrão da base de dados
+        texto_processado = unidecode(texto.lower())
+        texto_processado = re.sub(r'[^a-zA-Z0-9\s]', '', texto_processado)
+
+        # Convertendo o texto para um vetor BoW
+        vetor_texto = vectorizer.transform([texto_processado])
+
+        # Realizando a predição
+        predicao = classificador.predict(vetor_texto)
+
+        return predicao <= 0.5  # Ajuste conforme necessário
+
+    except Exception as e:
+        raise Exception(f'Erro durante a validação do texto BoW: \n{str(e)}')
+    
 def main():
     try:
         # Criando o vetorizador BoW
