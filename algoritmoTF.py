@@ -124,7 +124,7 @@ def validarTextoTFIDF(texto):
 
 def main():
     try:
-        # Criando o vetorizador TF-IDF
+        # Criando o vetorizador TF-IDF -
         vectorizer = TfidfVectorizer()
 
         # Definindo os classificadores a serem treinados

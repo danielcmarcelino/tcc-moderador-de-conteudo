@@ -110,7 +110,7 @@ def main():
         # Criando o vetorizador BoW
         vectorizer = CountVectorizer()
 
-        # Definindo os classificadores a serem treinados
+        # Definindo os classificadores a serem treinados - 
         classificadores = [
             Perceptron(),
             MLPClassifier(),

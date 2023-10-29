@@ -34,7 +34,7 @@ def removerArquivo(caminhoArquivo):
 
 
 def remover_pontuacao(texto):
-    # Remove pontuações do texto
+    # Remove pontuações do texto - 
     return texto.translate(str.maketrans("", "", string.punctuation))
 
 

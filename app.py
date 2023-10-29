@@ -22,7 +22,7 @@ def classificar():
     if mensagem == '':
         return 'A mensagem está vazia.'
     else:
-        # Escolher o método desejado
+        # Escolher o método desejado - 
         if metodo == 'bow':
             if not validarTextoBoW(mensagem):  
                 return 'Mensagem possivelmente indesejável (BoW) = "' + mensagem + '"'
