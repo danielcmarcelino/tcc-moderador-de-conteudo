@@ -1,59 +1,98 @@
 from geral import *
 from algoritmoBoW import treinarModelos, validarTextoBoW, validarTextoAdaBoost, validarTextoMultinomialNB, validarTextoSGD, validarTextoPassiveAggressive, validarTextoPerceptron, validarTextoMLP, validarTextoDecisionTree
+from algoritmoWord2Vec import validarTextoWord2Vec
 from algoritmoTF import validarTextoTFIDF
-from flask import Flask, request
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-formatoJsonMsg = '{ "msg": "texto da mensagem aqui", "metodo": "nome_do_metodo" }'
+def retornaNome(abreviacao):
+    abreviacao = abreviacao.lower()
+
+    if abreviacao == 'ada':
+        return 'AdaBoost'
+    elif abreviacao == 'bow':
+        return 'BoW'
+    elif abreviacao == 'dt':
+        return 'DecisionTreeClassifier'
+    elif abreviacao == 'mlp':
+        return 'MLPClassifier'
+    elif abreviacao == 'mnb':
+        return 'Multinomial Naive Bayes'
+    elif abreviacao == 'nb':
+        return 'Naive Bayes'
+    elif abreviacao == 'pa':
+        return 'Passive Aggressive'
+    elif abreviacao == 'perceptron':
+        return 'Perceptron'
+    elif abreviacao == 'rfc':
+        return 'Random Forest Classifier'
+    elif abreviacao == 'sgd':
+        return 'SGD'
+    elif abreviacao == 'svm':
+        return 'Support Vector Machine'
+    elif abreviacao == 'tfi':
+        return "TF-IDF"
+    elif abreviacao == 'word2vec':
+        return 'Word2Vec'
+    else:
+        return abreviacao
 
 @app.route('/')
 def homepage():
-    return 'API ativa. Utilize a url "/classificar" para enviar a mensagem que deseja classificar via JSON: ' + formatoJsonMsg 
+    return render_template('index.html') 
 
 @app.route('/classificar', methods=['POST'])
 def classificar():
     try:
-        mensagem = request.get_json()['msg'].upper()
-        metodo = request.get_json()['metodo'].lower()
-    except:
-        return 'Ocorreu um erro ao verificar o JSON. Verifique se o mesmo está no formato correto: ' + formatoJsonMsg
-    
-    if mensagem == '':
-        return 'A mensagem está vazia.'
-    else:
-        # Escolher o método desejado - 
-        if metodo == 'bow':
-            if not validarTextoBoW(mensagem):  
-                return 'Mensagem possivelmente indesejável (BoW) = "' + mensagem + '"'
-        elif metodo == 'adaboost':
-            if not validarTextoAdaBoost(mensagem):  
-                return 'Mensagem possivelmente indesejável (AdaBoost) = "' + mensagem + '"'
-        elif metodo == 'multinomialnb':
-            if not validarTextoMultinomialNB(mensagem):  
-                return 'Mensagem possivelmente indesejável (Multinomial Naive Bayes) = "' + mensagem + '"'
-        elif metodo == 'sgd':
-            if not validarTextoSGD(mensagem):  
-                return 'Mensagem possivelmente indesejável (SGD) = "' + mensagem + '"'
-        elif metodo == 'passiveaggressive':
-            if not validarTextoPassiveAggressive(mensagem):  
-                return 'Mensagem possivelmente indesejável (Passive Aggressive) = "' + mensagem + '"'
-        elif metodo == 'perceptron':
-            if not validarTextoPerceptron(mensagem):  
-                return 'Mensagem possivelmente indesejável (Perceptron) = "' + mensagem + '"'
-        elif metodo == 'mlp':
-            if not validarTextoMLP(mensagem):  
-                return 'Mensagem possivelmente indesejável (MLPClassifier) = "' + mensagem + '"'
-        elif metodo == 'decisiontree':
-            if not validarTextoDecisionTree(mensagem):  
-                return 'Mensagem possivelmente indesejável (DecisionTreeClassifier) = "' + mensagem + '"'
-        elif metodo == 'tfidf':
-            if not validarTextoTFIDF(mensagem):  
-                return 'Mensagem possivelmente indesejável (TF-IDF) = "' + mensagem + '"'
+        mensagem = ''
+        representacao = ''
+        metodo = ''
+        resultado = ''
+
+        if request.content_type == 'application/json':
+            mensagem = request.get_json()['msg'].upper()
+            representacao = request.get_json()['representacao'].lower()
+            metodo = request.get_json()['metodoClassificacao'].lower()
         else:
-            return 'Método não reconhecido. Utilize "bow", "adaboost", "multinomialnb", "sgd", "passiveaggressive", "perceptron", "mlp", "decisiontree" ou "tfidf" como parâmetro.'
+            mensagem = request.form['msg'].upper()
+            representacao = request.form['representacao'].lower()
+            metodo = request.form['metodoClassificacao'].lower()
+    
+        mensagemOK = True
+        if mensagem == '':
+            return jsonify({'textoRetorno': 'Texto a ver validado é obrigatório.'})
+        elif representacao == "bow":
+            # Escolher o método desejado
+            if metodo == 'bow':
+                mensagemOK = validarTextoBoW(mensagem)
+            elif metodo == 'ada':
+                mensagemOK = validarTextoAdaBoost(mensagem)
+            elif metodo == 'mnb':
+                mensagemOK = validarTextoMultinomialNB(mensagem)
+            elif metodo == 'sgd':
+                mensagemOK = validarTextoSGD(mensagem)
+            elif metodo == 'pa':
+                mensagemOK = validarTextoPassiveAggressive(mensagem)
+            elif metodo == 'per':
+                mensagemOK = validarTextoPerceptron(mensagem)
+            elif metodo == 'mlp':
+                mensagemOK = validarTextoMLP(mensagem)
+            elif metodo == 'dt':
+                mensagemOK = validarTextoDecisionTree(mensagem)
+            elif metodo == 'tfi':
+                mensagemOK = validarTextoTFIDF(mensagem)
+        elif representacao == "word2vec" and metodo in ['rfc', 'svm', 'nb', 'ada', 'per', 'sgd', 'pa']:
+            mensagemOK = validarTextoWord2Vec(mensagem, metodo)
 
-    return 'Mensagem OK'
+        resultado = 'Utilizando o algoritmo de representação ' + retornaNome(representacao)
+        resultado = resultado + ' com algoritmo de classificação ' + retornaNome(metodo)
+        resultado = resultado + ', a mensagem "' + mensagem + '" foi classificada como '
+        resultado = resultado + ('"Mensagem OK"' if mensagemOK else '"Mensagem possivelmente indesejável"')
 
+        return jsonify({'textoRetorno': resultado})
+    except Exception as e:
+        return jsonify({'textoRetorno': 'Ocorreu um erro ao validar ' + str(e)})
+    
 if __name__ == "__main__":
     app.run(port=5000, host='localhost', debug=True)

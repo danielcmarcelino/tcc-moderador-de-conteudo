@@ -139,11 +139,9 @@ def treinarWord2Vec(algoritmoTreinoWord2Vec=0, tamanhoTeste=0.3, algoritmoClassi
     except Exception as e:
         raise Exception('Arquivo "algoritmoWord2Vec", método "treinarWord2Vec": \n' + str(e))
 
-def validarTextoWord2Vec(texto, algoritmoClassificador = 'RFC'):
+def validarTextoWord2Vec(texto, algoritmoClassificador):
     try:
-        if algoritmoClassificador not in ['RFC', 'SVM', 'NB', 'ADA', 'PER', 'SGD', 'PA']:
-            raise Exception('algoritmoClassificador inválido')
-
+        algoritmoClassificador = algoritmoClassificador.upper()
         modelo = Word2Vec.load(nomeArquivoModelo)
         classificador = load(caminhoArquivos + 'classificador' + algoritmoClassificador + '.joblib')
 
