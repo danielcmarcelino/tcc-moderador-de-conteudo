@@ -1,42 +1,10 @@
-from geral import *
-from algoritmoBoW import treinarModelos, validarTextoBoW, validarTextoAdaBoost, validarTextoMultinomialNB, validarTextoSGD, validarTextoPassiveAggressive, validarTextoPerceptron, validarTextoMLP, validarTextoDecisionTree
-from algoritmoWord2Vec import validarTextoWord2Vec
-from algoritmoTF import validarTextoTFIDF
-from flask import Flask, request, jsonify, render_template
+from bibliotecas import *
+import geral as g
+import algoritmoBoW as bow
+import algoritmoWord2Vec as w2v
+import algoritmoTF as tfi
 
 app = Flask(__name__)
-
-def retornaNome(abreviacao):
-    abreviacao = abreviacao.lower()
-
-    if abreviacao == 'ada':
-        return 'AdaBoost'
-    elif abreviacao == 'bow':
-        return 'BoW'
-    elif abreviacao == 'dt':
-        return 'DecisionTreeClassifier'
-    elif abreviacao == 'mlp':
-        return 'MLPClassifier'
-    elif abreviacao == 'mnb':
-        return 'Multinomial Naive Bayes'
-    elif abreviacao == 'nb':
-        return 'Naive Bayes'
-    elif abreviacao == 'pa':
-        return 'Passive Aggressive'
-    elif abreviacao == 'perceptron':
-        return 'Perceptron'
-    elif abreviacao == 'rfc':
-        return 'Random Forest Classifier'
-    elif abreviacao == 'sgd':
-        return 'SGD'
-    elif abreviacao == 'svm':
-        return 'Support Vector Machine'
-    elif abreviacao == 'tfi':
-        return "TF-IDF"
-    elif abreviacao == 'word2vec':
-        return 'Word2Vec'
-    else:
-        return abreviacao
 
 @app.route('/')
 def homepage():
@@ -47,52 +15,40 @@ def classificar():
     try:
         mensagem = ''
         representacao = ''
-        metodo = ''
-        resultado = ''
+        classificacao = ''
 
         if request.content_type == 'application/json':
             mensagem = request.get_json()['msg'].upper()
             representacao = request.get_json()['representacao'].lower()
-            metodo = request.get_json()['metodoClassificacao'].lower()
+            classificacao = request.get_json()['classificacao'].lower()
         else:
             mensagem = request.form['msg'].upper()
             representacao = request.form['representacao'].lower()
-            metodo = request.form['metodoClassificacao'].lower()
-    
-        mensagemOK = True
+            classificacao = request.form['classificacao'].lower()
+
+        representacao = representacao.lower()
+        classificacao = classificacao.lower()
+
         if mensagem == '':
-            return jsonify({'textoRetorno': 'Texto a ver validado é obrigatório.'})
-        elif representacao == "bow":
-            # Escolher o método desejado
-            if metodo == 'bow':
-                mensagemOK = validarTextoBoW(mensagem)
-            elif metodo == 'ada':
-                mensagemOK = validarTextoAdaBoost(mensagem)
-            elif metodo == 'mnb':
-                mensagemOK = validarTextoMultinomialNB(mensagem)
-            elif metodo == 'sgd':
-                mensagemOK = validarTextoSGD(mensagem)
-            elif metodo == 'pa':
-                mensagemOK = validarTextoPassiveAggressive(mensagem)
-            elif metodo == 'per':
-                mensagemOK = validarTextoPerceptron(mensagem)
-            elif metodo == 'mlp':
-                mensagemOK = validarTextoMLP(mensagem)
-            elif metodo == 'dt':
-                mensagemOK = validarTextoDecisionTree(mensagem)
-            elif metodo == 'tfi':
-                mensagemOK = validarTextoTFIDF(mensagem)
-        elif representacao == "word2vec" and metodo in ['rfc', 'svm', 'nb', 'ada', 'per', 'sgd', 'pa']:
-            mensagemOK = validarTextoWord2Vec(mensagem, metodo)
+            return jsonify({'codRetorno': 3, 'textoRetorno': 'Texto a ver validado é obrigatório.'})
+        if representacao == '' or representacao not in ['bow', 'tfi', 'w2v']:
+            return jsonify({'codRetorno': 4, 'textoRetorno': 'Algoritmo de representação inválido.'})
+        if classificacao == '' or classificacao not in ['ada', 'dtc', 'mlp', 'pac', 'per', 'rfc', 'sgd']:
+            return jsonify({'codRetorno': 5, 'textoRetorno': 'Algoritmo de classificação inválido.'})
 
-        resultado = 'Utilizando o algoritmo de representação ' + retornaNome(representacao)
-        resultado = resultado + ' com algoritmo de classificação ' + retornaNome(metodo)
-        resultado = resultado + ', a mensagem "' + mensagem + '" foi classificada como '
-        resultado = resultado + ('"Mensagem OK"' if mensagemOK else '"Mensagem possivelmente indesejável"')
+        mensagemOK = True
 
-        return jsonify({'textoRetorno': resultado})
+        if representacao == 'bow':
+            mensagemOK = bow.validarTexto(mensagem, classificacao)
+        elif representacao == 'tfi':
+            mensagemOK = tfi.validarTexto(mensagem, classificacao)
+        elif representacao == 'w2v':
+            mensagemOK = w2v.validarTexto(mensagem, classificacao)
+
+        resultado = 'Mensagem OK' if mensagemOK else 'Mensagem possivelmente indesejável'
+        return jsonify({'codRetorno': (0 if mensagemOK else 1), 'textoRetorno': resultado})
     except Exception as e:
-        return jsonify({'textoRetorno': 'Ocorreu um erro ao validar ' + str(e)})
+        return jsonify({'codRetorno': 2, 'textoRetorno': 'Ocorreu um erro ao validar: ' + str(e)})
     
 if __name__ == "__main__":
     app.run(port=5000, host='localhost', debug=True)
