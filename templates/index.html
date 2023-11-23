@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderador de Conteúdo</title>
+</head>
+
+<body>
+    <h1>Moderador de Conteúdo</h1>
+
+    <label for="listaRepresentacoes">Algoritmo de representação:</label>
+    <select id="listaRepresentacoes">
+        <option value="bow">Bag of Words</option>
+        <option value="w2v">Word2Vec</option>
+        <option value="tfi">TF-IDF</option>
+    </select>
+
+    <br><br>
+    <label for="listaClassificadores">Algoritmo de classificação:</label>
+    <select id="listaClassificadores">
+        <option value="ada">AdaBoost</option>
+        <option value="dtc">Decision Tree</option>
+        <option value="mlp">MLPClassifier</option>
+        <option value="pac">Passive Aggressive Classifier</option>
+        <option value="per">Perceptron</option>
+        <option value="rfc">Random Forest Classifier</option>
+        <option value="sgd">Stochastic Gradient Descent</option>
+    </select>
+
+    <br><br>
+    <label for="msg">Texto a ver validado:</label>
+    <input type="text" id="msg" placeholder="Digite o texto">
+    <br><br>
+
+    <button onclick="classificar()">Validar texto</button>
+
+    <br><br>
+    <label id="lblRetorno"></label>
+    <br><br>
+
+    <script>
+        function classificar() {
+            var msg = document.getElementById("msg").value;
+            var representacao = document.getElementById('listaRepresentacoes').value;
+            var classificador = document.getElementById('listaClassificadores').value;
+            var lblRetorno = document.getElementById('lblRetorno');
+
+            lblRetorno.innerText = " ";
+            document.body.style.backgroundColor = "#ffffff";
+
+            
+            fetch('/classificar', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'msg': msg,
+                    'representacao': representacao,
+                    'classificacao': classificador
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.codRetorno == 0) //MensagemOK
+                {
+                    document.body.style.backgroundColor = "#007f00"; //Verde
+                }
+                else if (data.codRetorno == 1) //Mensagem potencialmente indesejável
+                {
+                    document.body.style.backgroundColor = "#ffa600"; //Laranja
+                }
+                lblRetorno.innerText = data.textoRetorno;
+            })
+            .catch(error => {
+                alert('Ocorreu um erro: ', error)
+            });
+        }
+    </script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 120%;
+        }
+
+        h1 {
+            margin-bottom: 80px;
+        }
+
+        label {
+            margin-bottom: 10px;
+        }
+
+        select, input {
+            padding: 8px;
+            margin-bottom: 15px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #009bdb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #004479;
+        }
+    </style>
+</body>
+
+</html>
