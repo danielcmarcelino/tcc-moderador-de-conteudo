@@ -10,16 +10,16 @@
 <body>
     <h1>Moderador de Conteúdo</h1>
 
-    <label for="listaRepresentacoes">Algoritmo de representação:</label>
-    <select id="listaRepresentacoes">
+    <label for="selRepresentacoes">Algoritmo de representação:</label>
+    <select id="selRepresentacoes" onchange="limparTela()">
         <option value="bow">Bag of Words</option>
         <option value="w2v">Word2Vec</option>
         <option value="tfi">TF-IDF</option>
     </select>
 
     <br><br>
-    <label for="listaClassificadores">Algoritmo de classificação:</label>
-    <select id="listaClassificadores">
+    <label for="selClassificadores">Algoritmo de classificação:</label>
+    <select id="selClassificadores" onchange="limparTela()">
         <option value="ada">AdaBoost</option>
         <option value="dtc">Decision Tree</option>
         <option value="mlp">MLPClassifier</option>
@@ -30,33 +30,33 @@
     </select>
 
     <br><br>
-    <label for="msg">Texto a ver validado:</label>
-    <input type="text" id="msg" placeholder="Digite o texto">
+    <label for="inpTexto">Texto a ver validado:</label>
+    <input type="text" id="inpTexto" placeholder="Digite o texto" oninput="limparTela()">
     <br><br>
 
-    <button onclick="classificar()">Validar texto</button>
+    <button id="btnClassificar" onclick="classificar()">Validar texto</button>
 
     <br><br>
-    <label id="lblRetorno"></label>
+    <label id="lblRetorno" style="color: white;">I</label>
     <br><br>
 
     <script>
+        btnClassificar = document.getElementById('btnClassificar');
+        lblRetorno = document.getElementById('lblRetorno');
+
+        function limparTela() {  
+            lblRetorno.innerText = "I";
+            lblRetorno.style.color = "white";
+            document.body.style.backgroundColor = "white";
+        }
+
         function classificar() {
-            var msg = document.getElementById("msg").value;
-            var representacao = document.getElementById('listaRepresentacoes').value;
-            var classificador = document.getElementById('listaClassificadores').value;
-            var lblRetorno = document.getElementById('lblRetorno');
-
-            lblRetorno.innerText = " ";
-            document.body.style.backgroundColor = "#ffffff";
-
-            
             fetch('/classificar', {
                 method: 'POST',
                 body: new URLSearchParams({
-                    'msg': msg,
-                    'representacao': representacao,
-                    'classificacao': classificador
+                    'msg': document.getElementById("inpTexto").value,
+                    'representacao': document.getElementById('selRepresentacoes').value,
+                    'classificacao': document.getElementById('selClassificadores').value
                 }),
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -64,15 +64,19 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.codRetorno == 0) //MensagemOK
+                if (data.codRetorno == 2) //Deu erro
                 {
-                    document.body.style.backgroundColor = "#007f00"; //Verde
+                    alert(data.textoRetorno);
                 }
-                else if (data.codRetorno == 1) //Mensagem potencialmente indesejável
+                else
                 {
-                    document.body.style.backgroundColor = "#ffa600"; //Laranja
+                    if (data.codRetorno == 0) //Mensagem OK
+                        document.body.style.backgroundColor = "green";
+                    else if (data.codRetorno == 1) //Mensagem possivelmente indesejável
+                        document.body.style.backgroundColor = "orange";
+                    lblRetorno.innerText = data.textoRetorno;
+                    lblRetorno.style.color = "black";
                 }
-                lblRetorno.innerText = data.textoRetorno;
             })
             .catch(error => {
                 alert('Ocorreu um erro: ', error)
