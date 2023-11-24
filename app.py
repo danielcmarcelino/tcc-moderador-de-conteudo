@@ -30,7 +30,7 @@ def classificar():
         classificacao = classificacao.lower()
 
         if mensagem == '':
-            return g.montaJsonRetorno(cod = 3, texto = 'Texto a ver validado é obrigatório.')
+            return g.montaJsonRetorno(cod = 3, texto = 'Texto a ser validado é obrigatório.')
         if representacao == '' or representacao not in ['bow', 'tfi', 'w2v']:
             return g.montaJsonRetorno(cod = 4, texto = 'Algoritmo de representação inválido.')
         if classificacao == '' or classificacao not in ['ada', 'dtc', 'mlp', 'pac', 'per', 'rfc', 'sgd']:
