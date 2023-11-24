@@ -6,19 +6,18 @@ import algoritmoTF as tfi
 
 g.limparTela()
 
-print('\n\n ----------------- INICIO DOS TREINAMENTOS -----------------')
+print('----------------- INICIO DOS TREINAMENTOS -----------------')
 
-print('\n\n ----------------- INICIO DO WORD2VECTOR ----------------- \n\n')
+print('\n----------------- INICIO DO WORD2VECTOR -----------------')
 w2v.treinarModelos()
-print('\n\n ----------------- FIM DO WORD2VECTOR ----------------- \n\n')
+print('----------------- FIM DO WORD2VECTOR -----------------\n')
 
-print('\n\n ----------------- INICIO DO BAG OF WORDS ----------------- \n\n')
+print('\n----------------- INICIO DO BAG OF WORDS -----------------')
 bow.treinarModelos()
-print('\n\n ----------------- FIM DO BAG OF WORDS ----------------- \n\n')
+print('----------------- FIM DO BAG OF WORDS -----------------\n')
 
-print('\n\n ----------------- INICIO DO TF-IDF ----------------- \n\n')
+print('\n----------------- INICIO DO TF-IDF -----------------')
 tfi.treinarModelos()
-print('\n\n ----------------- FIM DO TF-IDF ----------------- \n\n')
+print('----------------- FIM DO TF-IDF -----------------\n')
 
-
-print('\n\n ----------------- FIM DOS TREINAMENTOS -----------------')
+print('\n\n----------------- FIM DOS TREINAMENTOS -----------------')
