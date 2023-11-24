@@ -65,6 +65,9 @@ def retornaNomeCompletoClassificador(classificador):
 def retornaCaminhoArquivoClassificador(caminho, classificador):
     return caminho.format(retornaAbreviacaoClassificador(classificador))
 
+def montaJsonRetorno(cod = -1, texto = ''):
+    return jsonify({'codRetorno': cod, 'textoRetorno': texto})
+
 def limparTela():
     try:
         if platform.system().upper() == "WINDOWS":

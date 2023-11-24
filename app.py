@@ -18,23 +18,23 @@ def classificar():
         classificacao = ''
 
         if request.content_type == 'application/json':
-            mensagem = request.get_json()['msg'].upper()
-            representacao = request.get_json()['representacao'].lower()
-            classificacao = request.get_json()['classificacao'].lower()
+            mensagem = request.get_json()['msg']
+            representacao = request.get_json()['representacao']
+            classificacao = request.get_json()['classificacao']
         else:
-            mensagem = request.form['msg'].upper()
-            representacao = request.form['representacao'].lower()
-            classificacao = request.form['classificacao'].lower()
+            mensagem = request.form['msg']
+            representacao = request.form['representacao']
+            classificacao = request.form['classificacao']
 
         representacao = representacao.lower()
         classificacao = classificacao.lower()
 
         if mensagem == '':
-            return jsonify({'codRetorno': 3, 'textoRetorno': 'Texto a ver validado é obrigatório.'})
+            return g.montaJsonRetorno(cod = 3, texto = 'Texto a ver validado é obrigatório.')
         if representacao == '' or representacao not in ['bow', 'tfi', 'w2v']:
-            return jsonify({'codRetorno': 4, 'textoRetorno': 'Algoritmo de representação inválido.'})
+            return g.montaJsonRetorno(cod = 4, texto = 'Algoritmo de representação inválido.')
         if classificacao == '' or classificacao not in ['ada', 'dtc', 'mlp', 'pac', 'per', 'rfc', 'sgd']:
-            return jsonify({'codRetorno': 5, 'textoRetorno': 'Algoritmo de classificação inválido.'})
+            return g.montaJsonRetorno(cod = 5, texto = 'Algoritmo de classificação inválido.')
 
         mensagemOK = True
 
@@ -46,9 +46,9 @@ def classificar():
             mensagemOK = w2v.validarTexto(mensagem, classificacao)
 
         resultado = 'Mensagem OK' if mensagemOK else 'Mensagem possivelmente indesejável'
-        return jsonify({'codRetorno': (0 if mensagemOK else 1), 'textoRetorno': resultado})
+        return g.montaJsonRetorno(cod = (0 if mensagemOK else 1), texto = resultado)
     except Exception as e:
-        return jsonify({'codRetorno': 2, 'textoRetorno': 'Ocorreu um erro ao validar: ' + str(e)})
+        return g.montaJsonRetorno(cod = 2, texto = 'Ocorreu um erro ao validar: ' + str(e))
     
 if __name__ == "__main__":
     app.run(port=5000, host='localhost', debug=True)
