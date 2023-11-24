@@ -30,7 +30,6 @@ def treinarModelos():
             print(f'Fim do treinamento {nomeClassificador} com Word2Vec (Skip-Gram)\n')
 
             # Avaliando a acurácia no conjunto de teste
-            X_teste = [modelo_word2vec.wv[token] for token in textos_teste]
             predicoes = classificador.predict(X_teste)
             acuracia = accuracy_score(rotulos_teste, predicoes)
             print(f'Acurácia para {nomeClassificador} com Word2Vec (Skip-Gram):', acuracia)
