@@ -78,7 +78,7 @@ def validarTexto(texto, classificador):
         # Prever a classe do texto
         predicao = classificador.predict(texto_vetorizado)
 
-        return bool(predicao[0])  # Convertendo para booleano (True se for tóxico, False se não for)
+        return predicao <= 0.5
 
     except Exception as e:
         raise Exception(f'Erro durante a validação do texto com TF-IDF: \n{str(e)}')
